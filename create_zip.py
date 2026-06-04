@@ -11,7 +11,7 @@ def zip_project(zip_filename="store_intelligence_system.zip"):
         '.zip', '.mp4', '.db', '.db-journal', '.log', '.pyc'
     }
     
-    allowed_jsonl = "sample_eventsbe42122.jsonl"
+    allowed_jsonl = {"sample_eventsbe42122.jsonl", "events.jsonl"}
     
     # Check if existing zip exists and remove it to avoid zipping into itself
     if os.path.exists(zip_filename):
@@ -34,7 +34,7 @@ def zip_project(zip_filename="store_intelligence_system.zip"):
                     continue
                     
                 if ext in exclude_extensions:
-                    if file != allowed_jsonl:
+                    if file not in allowed_jsonl:
                         continue
                 
                 path_parts = rel_path.split(os.sep)
