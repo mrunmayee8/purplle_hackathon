@@ -10,6 +10,8 @@ frontend/public/Store 2/*.mp4
 *.db-journal
 *.log
 *.jsonl
+!events.jsonl
+!sample_eventsbe42122.jsonl
 test_det.jpg
 
 # Node.js Dependencies & Builds

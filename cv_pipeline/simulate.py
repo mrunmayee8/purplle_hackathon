@@ -30,11 +30,17 @@ def generate_demographics(track_id: int):
     is_staff = (val % 30) == 0  # 3.3% chance of being staff
     return gender, age, age_bucket, is_staff
 
+_api_offline = False
+
 def post_event(payload):
+    global _api_offline
+    if _api_offline:
+        return
     try:
-        requests.post(API_URL, json=payload, timeout=2.0)
+        requests.post(API_URL, json=payload, timeout=0.2)
     except Exception:
-        pass  # Ignore errors if server offline during offline build/test
+        _api_offline = True
+        print("Backend API server is offline. Running simulation in local-file only mode (events will be written to events.jsonl).")
 
 def run_simulation():
     """Reads transactions from CSV and builds a realistic stream of retail events."""
@@ -146,7 +152,9 @@ def run_simulation():
             "gender_pred": gender,
             "age_pred": age,
             "age_bucket": age_bucket,
-            "is_face_hidden": False
+            "is_face_hidden": False,
+            "group_id": None,
+            "group_size": None
         })
         
         # B. Shelf visit events
@@ -231,7 +239,9 @@ def run_simulation():
             "gender_pred": gender,
             "age_pred": age,
             "age_bucket": age_bucket,
-            "is_face_hidden": False
+            "is_face_hidden": False,
+            "group_id": None,
+            "group_size": None
         })
 
     # 3. Simulate non-purchasing visitors
@@ -274,7 +284,9 @@ def run_simulation():
             "gender_pred": gender,
             "age_pred": age,
             "age_bucket": age_bucket,
-            "is_face_hidden": False
+            "is_face_hidden": False,
+            "group_id": None,
+            "group_size": None
         })
         
         # B. Shelf browse
@@ -377,7 +389,9 @@ def run_simulation():
             "gender_pred": gender,
             "age_pred": age,
             "age_bucket": age_bucket,
-            "is_face_hidden": False
+            "is_face_hidden": False,
+            "group_id": None,
+            "group_size": None
         })
         
     # Sort all events chronologically so they ingest in order
@@ -396,6 +410,15 @@ def run_simulation():
         success_count += 1
         
     print(f"Ingested {success_count} simulated events successfully.")
+    
+    # Save events to events.jsonl at the root of the workspace
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_path = os.path.join(root_dir, "events.jsonl")
+    with open(output_path, "w", encoding="utf-8") as out_f:
+        for ev in events_to_send:
+            out_f.write(json.dumps(ev) + "\n")
+    print(f"Saved {len(events_to_send)} events to {output_path}")
+    
     return success_count
 
 if __name__ == "__main__":
