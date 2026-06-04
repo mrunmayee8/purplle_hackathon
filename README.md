@@ -1,0 +1,42 @@
+# Store Intelligence System
+
+This project is an end-to-end Store Intelligence System that processes retail CCTV camera feeds, tracks customer paths, aggregates store analytics, and flags security or operational anomalies. It correlates customer footfall trajectories with digital Point-of-Sale (POS) transactions to calculate conversion funnels and store conversion rates.
+
+## Core Capabilities
+
+* **CCTV Event Ingestion**: Runs YOLOv8 person detection and multi-object tracking. Trajectories are mapped to key store zones (entrances, product shelves, and checkout queues) to generate structured customer journey events.
+* **POS Correlation**: Automatically matches queue checkouts with database sales transaction timestamps within a 3-minute window. This links physical store interactions with final purchases to measure conversions.
+* **Loss Prevention & Anomalies**: Evaluates retail rules to detect alerts in real time:
+  * Shoppers visiting revenue zones and exiting without queueing or purchasing (shoplifting risk).
+  * Shoppers entering restricted staff-only areas.
+  * Long waiting queues or checkout bottlenecks.
+* **Management Dashboard**: A React-based web interface featuring KPI metric cards (footfall, occupancy, conversions), conversion funnel tracking, checkout queue health, and an interactive store layout overlay showing dwell times and occupancy hot spots.
+
+## Project Structure
+
+* **backend/**: FastAPI API service that handles event ingestion, Pydantic validation, POS seeding, database access (SQLite), and anomaly analysis.
+* **cv_pipeline/**: Python scripts that run YOLOv8 object detection via OpenCV DNN, track movement trajectories, and include a simulator to stream test events.
+* **frontend/**: React + Vite web dashboard displaying real-time store analytics and heatmaps.
+* **run.py**: Root runner script to start the backend and frontend concurrently.
+
+## Getting Started
+
+### Prerequisites
+Make sure Python 3 and Node.js are installed.
+
+### Setup and Start
+Run the launcher script from the root directory:
+
+```bash
+python run.py
+
+This installs required dependencies, imports the transaction database, and opens the services:
+
+FastAPI backend at http://localhost:8000
+React dashboard at http://localhost:5173
+Simulation Mode
+To test the dashboard immediately:
+
+Open http://localhost:5173.
+Click Run Simulator at the top right of the page.
+This seeds the database and streams simulated shopper events. You can toggle between Store 1 and Store 2 to see the dashboards, heatmaps, and security log populate.
