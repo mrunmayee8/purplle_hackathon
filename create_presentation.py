@@ -18,50 +18,57 @@ class NumberedCanvas(canvas.Canvas):
         num_pages = len(self._saved_page_states)
         for state in self._saved_page_states:
             self.__dict__.update(state)
-            self.draw_page_decorations(num_pages)
+            if self._pageNumber > 1:
+                self.saveState()
+                self.setFont("Helvetica", 8)
+                self.setFillColor(colors.HexColor("#64748b"))
+                self.drawRightString(752, 35, f"Slide {self._pageNumber} of {num_pages}")
+                self.restoreState()
             super().showPage()
         super().save()
 
-    def draw_page_decorations(self, page_count):
-        # Draw background color (except on cover page 1)
-        self.saveState()
-        self.setFillColor(colors.HexColor("#08070d"))
-        self.rect(0, 0, 792, 612, fill=True, stroke=False) # 11 x 8.5 inches (792x612 points)
-        
-        # Slide Header/Footer line
-        if self._pageNumber > 1:
-            # Subtle top border line
-            self.setStrokeColor(colors.HexColor("#3b0764"))
-            self.setLineWidth(1)
-            self.line(40, 550, 752, 550)
-            
-            # Subtle bottom border line
-            self.line(40, 50, 752, 50)
-            
-            # Header text
-            self.setFont("Helvetica-Bold", 8)
-            self.setFillColor(colors.HexColor("#c084fc"))
-            self.drawString(40, 560, "PURPLLE STORE INTELLIGENCE SYSTEM")
-            
-            # Footer text
-            self.setFont("Helvetica", 8)
-            self.setFillColor(colors.HexColor("#64748b"))
-            self.drawString(40, 35, "Purplle Tech Challenge 2026 — Round 2 Solution Pitch")
-            self.drawRightString(752, 35, f"Slide {self._pageNumber} of {page_count}")
-        else:
-            # Cover page custom decoration
-            # Draw decorative glowing blobs
-            self.setFillColor(colors.HexColor("#2e1065"))
-            self.circle(700, 500, 150, fill=True, stroke=False)
-            self.setFillColor(colors.HexColor("#0f172a"))
-            self.circle(100, 100, 200, fill=True, stroke=False)
-            
-            # Cover footer
-            self.setFont("Helvetica-Bold", 10)
-            self.setFillColor(colors.HexColor("#a855f7"))
-            self.drawCentredString(396, 60, "PURPLLE TECH CHALLENGE 2026")
-            
-        self.restoreState()
+def draw_first_page(canvas, doc):
+    canvas.saveState()
+    # Draw background color
+    canvas.setFillColor(colors.HexColor("#08070d"))
+    canvas.rect(0, 0, 792, 612, fill=True, stroke=False)
+    
+    # Custom decorations (blobs)
+    canvas.setFillColor(colors.HexColor("#2e1065"))
+    canvas.circle(700, 500, 150, fill=True, stroke=False)
+    canvas.setFillColor(colors.HexColor("#0f172a"))
+    canvas.circle(100, 100, 200, fill=True, stroke=False)
+    
+    # Cover footer
+    canvas.setFont("Helvetica-Bold", 10)
+    canvas.setFillColor(colors.HexColor("#a855f7"))
+    canvas.drawCentredString(396, 60, "PURPLLE TECH CHALLENGE 2026")
+    canvas.restoreState()
+
+def draw_later_pages(canvas, doc):
+    canvas.saveState()
+    # Draw background color
+    canvas.setFillColor(colors.HexColor("#08070d"))
+    canvas.rect(0, 0, 792, 612, fill=True, stroke=False)
+    
+    # Subtle top border line
+    canvas.setStrokeColor(colors.HexColor("#3b0764"))
+    canvas.setLineWidth(1)
+    canvas.line(40, 550, 752, 550)
+    
+    # Subtle bottom border line
+    canvas.line(40, 50, 752, 50)
+    
+    # Header text
+    canvas.setFont("Helvetica-Bold", 8)
+    canvas.setFillColor(colors.HexColor("#c084fc"))
+    canvas.drawString(40, 560, "PURPLLE STORE INTELLIGENCE SYSTEM")
+    
+    # Footer text
+    canvas.setFont("Helvetica", 8)
+    canvas.setFillColor(colors.HexColor("#64748b"))
+    canvas.drawString(40, 35, "Purplle Tech Challenge 2026 — Round 2 Solution Pitch")
+    canvas.restoreState()
 
 def build_pdf(filename="Store_Intelligence_Presentation.pdf"):
     # 11 x 8.5 inches in landscape is 792 x 612 points
@@ -225,7 +232,7 @@ def build_pdf(filename="Store_Intelligence_Presentation.pdf"):
     story.append(Paragraph("Production Features", bullet_title_style))
     story.append(Paragraph("- Unified Process Runner (python run.py starts backend, seeds DB, compiles frontend, and terminates clean)<br/>- Automatic POS Seeding from CSV files<br/>- Vercel-ready frontend with HTTPS-compliant mock fallbacks", body_style))
     
-    doc.build(story, canvasmaker=NumberedCanvas)
+    doc.build(story, onFirstPage=draw_first_page, onLaterPages=draw_later_pages, canvasmaker=NumberedCanvas)
     print("Successfully built Store_Intelligence_Presentation.pdf")
 
 if __name__ == "__main__":
