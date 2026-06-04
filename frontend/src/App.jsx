@@ -11,6 +11,83 @@ import {
 
 const API_BASE = 'http://localhost:8000/api';
 
+// Pre-defined high-fidelity mock data for Vercel demo fallback
+const MOCK_DATA = {
+  ST1076: { // Mumbai Store 1
+    summary: {
+      total_footfall: 142,
+      active_occupancy: 4,
+      conversion_rate: 19.72,
+      avg_dwell_time_seconds: 482.5,
+      avg_queue_wait_seconds: 32.4,
+      queue_abandonment_rate: 8.33,
+      total_revenue: 2984.50,
+      transaction_count: 28
+    },
+    zones: [
+      { zone_id: 'ST1076_Z02', zone_name: 'Center Display', zone_type: 'DISPLAY', is_revenue_zone: 'Yes', visitor_count: 98, avg_dwell_seconds: 44.5, conversion_rate: 22.45 },
+      { zone_id: 'ST1076_Z01', zone_name: 'Left Shelf', zone_type: 'SHELF', is_revenue_zone: 'Yes', visitor_count: 76, avg_dwell_seconds: 38.2, conversion_rate: 18.42 },
+      { zone_id: 'ST1076_Z03', zone_name: 'Lipstick Aisle', zone_type: 'SHELF', is_revenue_zone: 'Yes', visitor_count: 54, avg_dwell_seconds: 68.0, conversion_rate: 14.81 },
+      { zone_id: 'ST1076_Z_BILLING_01', zone_name: 'Billing Queue', zone_type: 'BILLING', is_revenue_zone: 'Yes', visitor_count: 36, avg_dwell_seconds: 32.4, conversion_rate: 77.78 }
+    ],
+    funnel: [
+      { stage_name: "Store Visits (Traffic)", visitor_count: 142, percentage_of_total: 100.0 },
+      { stage_name: "Product Engagement", visitor_count: 98, percentage_of_total: 69.0 },
+      { stage_name: "Checkout Queue", visitor_count: 36, percentage_of_total: 25.4 },
+      { stage_name: "Purchases (Converted)", visitor_count: 28, percentage_of_total: 19.7 }
+    ],
+    anomalies: [
+      { id: 1, store_id: 'ST1076', timestamp: new Date(Date.now() - 300000).toISOString(), anomaly_type: 'loss_prevention', severity: 'HIGH', description: "Visitor 'ID_512' visited Lipstick Aisle for 78s, but exited store without queueing or purchasing.", resolved: false },
+      { id: 2, store_id: 'ST1076', timestamp: new Date(Date.now() - 900000).toISOString(), anomaly_type: 'queue_bottleneck', severity: 'MEDIUM', description: "Customer 'ID_504' experienced checkout bottleneck waiting 65s in checkout queue.", resolved: true }
+    ],
+    chartData: [
+      { hour: "08:00", entries: 5, exits: 2, occupancy: 3 },
+      { hour: "10:00", entries: 18, exits: 12, occupancy: 9 },
+      { hour: "12:00", entries: 35, exits: 24, occupancy: 20 },
+      { hour: "14:00", entries: 42, exits: 38, occupancy: 24 },
+      { hour: "16:00", entries: 28, exits: 30, occupancy: 22 },
+      { hour: "18:00", entries: 12, exits: 19, occupancy: 15 },
+      { hour: "20:00", entries: 2, exits: 13, occupancy: 4 }
+    ]
+  },
+  ST1008: { // Pune Store 2
+    summary: {
+      total_footfall: 266,
+      active_occupancy: 7,
+      conversion_rate: 24.44,
+      avg_dwell_time_seconds: 524.0,
+      avg_queue_wait_seconds: 18.2,
+      queue_abandonment_rate: 4.76,
+      total_revenue: 7832.00,
+      transaction_count: 65
+    },
+    zones: [
+      { zone_id: 'ST1008_SZ01', zone_name: 'Main Cosmetics Display', zone_type: 'DISPLAY', is_revenue_zone: 'Yes', visitor_count: 182, avg_dwell_seconds: 42.0, conversion_rate: 26.37 },
+      { zone_id: 'ST1008_SZ02', zone_name: 'Skincare Aisle', zone_type: 'SHELF', is_revenue_zone: 'Yes', visitor_count: 124, avg_dwell_seconds: 35.5, conversion_rate: 22.58 },
+      { zone_id: 'ST1008_SZ03', zone_name: 'Haircare Section', zone_type: 'SHELF', is_revenue_zone: 'Yes', visitor_count: 94, avg_dwell_seconds: 28.0, conversion_rate: 18.09 },
+      { zone_id: 'ST1008_Z_BILLING_01', zone_name: 'Billing Queue', zone_type: 'BILLING', is_revenue_zone: 'Yes', visitor_count: 84, avg_dwell_seconds: 18.2, conversion_rate: 77.38 }
+    ],
+    funnel: [
+      { stage_name: "Store Visits (Traffic)", visitor_count: 266, percentage_of_total: 100.0 },
+      { stage_name: "Product Engagement", visitor_count: 182, percentage_of_total: 68.4 },
+      { stage_name: "Checkout Queue", visitor_count: 84, percentage_of_total: 31.6 },
+      { stage_name: "Purchases (Converted)", visitor_count: 65, percentage_of_total: 24.4 }
+    ],
+    anomalies: [
+      { id: 3, store_id: 'ST1008', timestamp: new Date(Date.now() - 600000).toISOString(), anomaly_type: 'staff_zone_breach', severity: 'HIGH', description: "Security Breach: Non-staff Track 518 entered designated staff-only zone: Back Counter Room.", resolved: false }
+    ],
+    chartData: [
+      { hour: "08:00", entries: 12, exits: 6, occupancy: 6 },
+      { hour: "10:00", entries: 35, exits: 22, occupancy: 19 },
+      { hour: "12:00", entries: 68, exits: 45, occupancy: 42 },
+      { hour: "14:00", entries: 75, exits: 68, occupancy: 49 },
+      { hour: "16:00", entries: 52, exits: 55, occupancy: 46 },
+      { hour: "18:00", entries: 20, exits: 38, occupancy: 28 },
+      { hour: "20:00", entries: 4, exits: 22, occupancy: 10 }
+    ]
+  }
+};
+
 function App() {
   const [selectedStore, setSelectedStore] = useState('ST1076'); // Default Store 1
   const [summary, setSummary] = useState(null);
@@ -24,6 +101,7 @@ function App() {
   const [simulating, setSimulating] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [activeZoneHover, setActiveZoneHover] = useState(null);
 
   // Fetch data
@@ -49,9 +127,21 @@ function App() {
       const chartData = await chartRes.json();
       setChartData(chartData);
       
+      setIsDemoMode(false);
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.warn("Failed to connect to local API backend. Falling back to offline Demo Mode:", error);
+      
+      // Load static mock data matching selected store
+      const mock = MOCK_DATA[selectedStore];
+      setSummary(mock.summary);
+      setZones(mock.zones);
+      setFunnel(mock.funnel);
+      setAnomalies(mock.anomalies);
+      setChartData(mock.chartData);
+      
+      setIsDemoMode(true);
+      setLoading(false);
     }
   };
 
@@ -64,6 +154,12 @@ function App() {
 
   // Trigger Simulator
   const handleSimulate = async () => {
+    if (isDemoMode) {
+      setSuccessMsg('Simulator is running (Local backend must be active to trigger event injection)');
+      setTimeout(() => setSuccessMsg(''), 3000);
+      return;
+    }
+    
     setSimulating(true);
     setSuccessMsg('Simulating CCTV event stream and populating metrics...');
     try {
@@ -86,6 +182,10 @@ function App() {
   };
 
   const handleResolveAnomaly = async (id) => {
+    if (isDemoMode) {
+      setAnomalies(prev => prev.map(a => a.id === id ? { ...a, resolved: true } : a));
+      return;
+    }
     try {
       await fetch(`${API_BASE}/analytics/anomalies/${id}/resolve`, { method: 'POST' });
       fetchData();
@@ -95,6 +195,11 @@ function App() {
   };
 
   const handleResetDb = async () => {
+    if (isDemoMode) {
+      setSuccessMsg('Local database reset disabled in offline Demo Mode');
+      setTimeout(() => setSuccessMsg(''), 3000);
+      return;
+    }
     if (window.confirm("Are you sure you want to clear all camera event logs? POS transactions will be reseeded.")) {
       try {
         await fetch(`${API_BASE}/pipeline/reset-db`, { method: 'POST' });
@@ -142,7 +247,14 @@ function App() {
           </div>
           <div>
             <h1 className="brand-title">Purplle Store Intelligence</h1>
-            <p className="brand-subtitle font-sans">Offline Retail Analytics & Live CCTV Ingestion</p>
+            <p className="brand-subtitle font-sans">
+              Offline Retail Analytics & Live CCTV Ingestion
+              {isDemoMode && (
+                <span className="health-status-badge health-ok" style={{ marginLeft: '10px', fontSize: '9px', verticalAlign: 'middle', background: 'rgba(6, 182, 212, 0.12)', color: '#22d3ee', borderColor: 'rgba(6, 182, 212, 0.25)' }}>
+                  Demo Fallback Mode
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -224,7 +336,7 @@ function App() {
       {loading ? (
         <div className="flex flex-col justify-center items-center h-96 gap-4" style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:'300px'}}>
           <RefreshCw className="w-10 h-10 text-purple-500 animate-spin" style={{animation: 'spin 2s linear infinite'}} />
-          <p className="text-slate-400 text-sm" style={{marginTop:'12px', color:'#94a3b8'}}>Aggregating live camera streams and seeding POS correlation records...</p>
+          <p className="text-slate-400 text-sm" style={{marginTop:'12px', color:'#94a3b8'}}>Aggregating live camera streams and seeding POS records...</p>
         </div>
       ) : (
         <>
@@ -410,7 +522,7 @@ function App() {
               <div className="dashboard-header" style={{ borderBottom: 'none', marginBottom: '12px', paddingBottom: '0' }}>
                 <div className="heatmap-description">
                   <h4 className="card-title" style={{ marginBottom: '4px' }}>
-                    Interactive Layout Overlay Heatmap
+                    Interactive Store Heatmap
                   </h4>
                   <p>Hover over areas to view active occupancy and detailed metrics</p>
                 </div>
