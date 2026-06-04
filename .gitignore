@@ -1,0 +1,32 @@
+# Large Hackathon Video Datasets & Zips
+*.zip
+Store 1/*.mp4
+Store 2/*.mp4
+frontend/public/Store 1/*.mp4
+frontend/public/Store 2/*.mp4
+
+# Local SQLite Databases & Logs
+*.db
+*.db-journal
+*.log
+*.jsonl
+test_det.jpg
+
+# Node.js Dependencies & Builds
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
+# Python Virtual Environments & Cache
+__pycache__/
+*/__pycache__/
+.venv/
+venv/
+ENV/
+*.pyc
+
+# IDE Settings
+.vscode/
+.idea/
+.DS_Store
